@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import styled from "styled-components";
 import BaseButton from "./BaseButton";
 
@@ -48,8 +48,10 @@ const OptionsContainer = styled.div`
  }
 `;
 
+
 function QuestionForm({ question, onNextQuestion }) {
  const [selectedValues, setSelectedValues] = useState({});
+ const [setShowThankMsg, ShowThankMsg] = useState(false);
 
  const handleChange = (event) => {
     const { value } = event.target;
