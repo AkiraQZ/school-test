@@ -4,7 +4,6 @@ import BaseButton from './components/BaseButton';
 import StyledHeaderComponent from './components/Header';
 import StyledTeacherPage from './TeacherPage';
 import StudentsPage from './StudentPage';
-import FooterComponent from './components/Footer';
 
 const keys = [
   {
@@ -86,7 +85,6 @@ export default function App() {
               <BaseButton onClick={handleSend}>Отправить</BaseButton>
             </Form>
           </Main>
-          <FooterComponent/>
         </Fragment>
       }
     </Fragment>

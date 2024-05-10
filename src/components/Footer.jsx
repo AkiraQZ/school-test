@@ -1,13 +1,17 @@
 import styled from 'styled-components';
 
 const StyledFooter = styled.footer`
+    position:fixed;
+    left:0px;
+    bottom:0px;
+    height:30px;
+    width:100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background-color: #666;
     color: white;
     padding: 10px;
-    width: 100%;
     a  {
         all: unset;
         cursor: pointer;
@@ -21,7 +25,7 @@ export default function FooterComponent () {
     return (
     <StyledFooter>
         <a href='https://github.com/AkiraQZ'>Created by AkiraQZ</a>
-        <p>2024</p>
+        <a href='#'>Обратная связь</a>
         </StyledFooter>
     )
 } 

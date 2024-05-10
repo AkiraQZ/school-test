@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from "react";
+import { useState } from "react";
 import styled from "styled-components";
 import BaseButton from "./BaseButton";
 
@@ -12,7 +12,6 @@ const QuestionFormContainer = styled.form`
  padding: 2rem;
  border-radius: 0.5rem;
  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
- height: 100vh;
 `;
 
 const QuestionTitle = styled.h2`
@@ -51,35 +50,35 @@ const OptionsContainer = styled.div`
 
 function QuestionForm({ question, onNextQuestion }) {
  const [selectedValues, setSelectedValues] = useState({});
- const [setShowThankMsg, ShowThankMsg] = useState(false);
+ 
+ 
 
  const handleChange = (event) => {
     const { value } = event.target;
     setSelectedValues((prevValues) => ({
       ...prevValues,
-      [question.id]: value, // Используем id вопроса для ключа
+      [question.id]: value, 
     }));
  };
 
  const handleSubmit = (event) => {
   event.preventDefault();
-  // Проверяем, выбран ли ответ на текущий вопрос
   if (!selectedValues[question.id]) {
      alert('Пожалуйста, выберите ответ на вопрос.');
-     return; // Прерываем выполнение функции, если ответ не выбран
+     return; 
   }
-  // Получаем текущий ответ на вопрос
+
   const currentAnswer = selectedValues[question.id];
-  // Получаем все предыдущие ответы из sessionStorage
+
   const previousAnswers = JSON.parse(sessionStorage.getItem('answers')) || {};
-  // Добавляем текущий ответ в объект ответов
+
   const updatedAnswers = {
        ...previousAnswers,
        [`answer-${question.id}`]: currentAnswer
   };
-  // Сохраняем обновленный объект ответов в sessionStorage
+
   sessionStorage.setItem('answers', JSON.stringify(updatedAnswers));
-  // Переходим к следующему вопросу
+
   onNextQuestion();
  };
 

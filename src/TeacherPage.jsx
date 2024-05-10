@@ -28,7 +28,7 @@ export default function TeacherPage () {
         const formData = new FormData();
         formData.append("myfile", file);
         try {
-          await axios.post("http://localhost:5500/upload", formData);
+          await axios.post("http://localhost:5550/upload", formData);
           alert("Файл загружен успешно!");
         } catch (error) {
           console.error("Ошибка при загрузке файла:", error);

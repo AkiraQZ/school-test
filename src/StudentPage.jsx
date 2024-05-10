@@ -3,8 +3,8 @@ import styled from "styled-components";
 import StyledHeaderComponent from "./components/Header";
 import BaseModal from "./components/Modal";
 import QuestionForm from "./components/TestForm";
-import questions from "../questions";
 import FooterComponent from "./components/Footer";
+import axios from "axios";
 
 const ThankMsg = styled.div`
   font-size: 1.5rem;
@@ -20,6 +20,23 @@ const ThankMsg = styled.div`
 export default function StudentsPage() {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [showThankMsg, setShowThankMsg] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const response = await axios.get("http://localhost:5550/questions");
+        setQuestions(response.data);
+        setIsLoading(false);
+      } catch (err) {
+        console.error(`Cannot get data: ${err}`);
+        setIsLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const savedIndex = sessionStorage.getItem('currentQuestionIndex');
@@ -29,7 +46,7 @@ export default function StudentsPage() {
         setCurrentQuestionIndex(parsedIndex);
       }
     }
-  }, []);
+  }, [questions]);
 
   const handleQuestionIndex = () => {
     setCurrentQuestionIndex(prevIndex => {
@@ -43,25 +60,28 @@ export default function StudentsPage() {
         sessionStorage.removeItem('recRole');
         sessionStorage.removeItem('currentQuestionIndex');
         sessionStorage.removeItem('answers');
-        return prevIndex; // Возвращаем предыдущий индекс, если достигнут конец списка
+        return prevIndex;
       }
     });
   };
-
   return (
     <>
-      {showThankMsg ? (
-        <Fragment>
-        <StyledHeaderComponent>Страница ученика</StyledHeaderComponent>
-        <ThankMsg>
-          Спасибо за прохождение теста!
-        </ThankMsg>
-        <FooterComponent />
-        </Fragment>
+      {isLoading ? (
+        <div>Loading...</div> // Можно заменить на индикатор загрузки
       ) : (
         <>
-          <StyledHeaderComponent>Страница ученика</StyledHeaderComponent>
-          <BaseModal>
+          {showThankMsg ? (
+            <Fragment>
+              <StyledHeaderComponent>Страница ученика</StyledHeaderComponent>
+              <ThankMsg>
+                Спасибо за прохождение теста!
+              </ThankMsg>
+              <FooterComponent />
+            </Fragment>
+          ) : (
+            <>
+              <StyledHeaderComponent>Страница ученика</StyledHeaderComponent>
+              <BaseModal>
           <h2>Правила проведения теста</h2>
         <p>Перед тобой несколько разных высказываний.<br/> Пожалуйста, прочти их и подумай – согласен ты с этими высказываниями или нет. <br/>Если согласен, то нажми на соответсвующую кнопку, затем далее (или клавишу Enter(для пк)) (+1, +2, +3 или +4) в специальном бланке рядом с номером этого высказывания.<br/> Если ты не согласен с каким-нибудь высказыванием, то поставь отрицательную оценку (-1, -2, -3, или –4).
 
@@ -85,12 +105,14 @@ export default function StudentsPage() {
 
         <br/>Постарайся быть честным. Здесь не может быть «правильных» и «неправильных» оценок. <br/>Важно лишь, чтобы они выражали только твое личное мнение. <br/> Спасибо тебе заранее!</p>
           </BaseModal>
-          <QuestionForm
-            question={questions[currentQuestionIndex]}
-            onNextQuestion={handleQuestionIndex}
-            isLastQuestion={showThankMsg}
-          />
-          <FooterComponent />
+              <QuestionForm
+                question={questions.length > 0 ? questions[currentQuestionIndex] : null}
+                onNextQuestion={handleQuestionIndex}
+                isLastQuestion={showThankMsg}
+              />
+              <FooterComponent />
+            </>
+          )}
         </>
       )}
     </>
