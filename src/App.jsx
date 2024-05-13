@@ -4,23 +4,9 @@ import BaseButton from './components/BaseButton';
 import StyledHeaderComponent from './components/Header';
 import StyledTeacherPage from './TeacherPage';
 import StudentsPage from './StudentPage';
-
-const keys = [
-  {
-    "id": 1,
-    "unique_key": "abc123",
-    "Name": "John Doe",
-    "role": "student",
-    "Class": "9A"
-  },
-  {
-    "id": 2,
-    "unique_key": "abc321",
-    "Name": "John Koe",
-    "role": 'teacher',
-    "Class": "8B"
-  },
-];
+import axios from 'axios';
+import { log } from 'react-modal/lib/helpers/ariaAppHider';
+import FooterComponent from './components/Footer';
 
 const Main = styled.section`
   display: flex;
@@ -46,6 +32,40 @@ const InputBox = styled.input`
 export default function App() {
   const [recRole, setRecRole] = useState('');
   const [inputValue, setInputValue] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [getedObject, setGetedObject] = useState([]);
+
+  async function codeCheck(input) {
+    try {
+        setGetedObject('');
+        setIsLoading(true);
+        let response = await axios.get("http://localhost:5550/teacher");
+        let data = response.data;
+        let foundUser = data.find((item) => item.code == input);
+        if (!foundUser) {
+            response = await axios.get("http://localhost:5550/student");
+            data = response.data;
+            foundUser = data.find((item) => item.code == input);
+            setGetedObject(foundUser);
+        } else {
+            setGetedObject(foundUser);
+        }
+        if (getedObject) {
+            setIsLoading(false);
+            return getedObject.role;
+        } else {
+            alert('Данного пользователя не существует');
+            setIsLoading(false);
+            return false;
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Произошла ошибка при выполнении запроса');
+        setIsLoading(false);
+        setGetedObject([]);
+        return false;
+    }
+}
 
   useEffect(() => {
     const savedRole = sessionStorage.getItem('recRole');
@@ -55,39 +75,50 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    sessionStorage.setItem('recRole', recRole);
+    if (recRole) {
+      sessionStorage.setItem('recRole', recRole);
+    }
   }, [recRole]);
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
 
-  const handleSend = () => {
-    const foundKey = keys.find(item => item.unique_key === inputValue);
-    if (foundKey) {
-      setRecRole(foundKey.role);
-    } else {
-      alert('Неверный код, попробуйте снова');
+  const handleSend = async () => {
+    event.preventDefault();
+    const role = await codeCheck(inputValue);
+    if (role) {
+      setRecRole(role);
     }
   };
 
   return (
     <Fragment>
-      {recRole === 'teacher' ? <StyledTeacherPage /> : recRole === 'student' ? <StudentsPage /> :
-        <Fragment>
-          <StyledHeaderComponent>
-            Стартовая страница
-          </StyledHeaderComponent>
-          <Main>
-            <Form>
-              <label htmlFor='querry'>Введите код</label>
-              <InputBox type="text" onChange={handleInputChange} placeholder='Ваш код' />
-              <BaseButton onClick={handleSend}>Отправить</BaseButton>
-            </Form>
-          </Main>
-        </Fragment>
-      }
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <>
+          {recRole === 'teacher' ? (
+            <StyledTeacherPage />
+          ) : recRole === 'student' ? (
+            <StudentsPage />
+          ) : (
+            <Fragment>
+              <StyledHeaderComponent>
+                Стартовая страница
+              </StyledHeaderComponent>
+              <Main>
+                <Form>
+                  <label htmlFor='query'>Введите код</label>
+                  <InputBox type="text" onChange={handleInputChange} placeholder='Ваш код' />
+                  <BaseButton onClick={handleSend}>Отправить</BaseButton>
+                </Form>
+              </Main>
+              <FooterComponent/>
+            </Fragment>
+          )}
+        </>
+      )}
     </Fragment>
   );
 }
-
