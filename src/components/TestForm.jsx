@@ -74,7 +74,7 @@ function QuestionForm({ question, onNextQuestion }) {
 
   const updatedAnswers = {
        ...previousAnswers,
-       [`answer-${question.id}`]: currentAnswer
+       [`${question.id}`]: currentAnswer
   };
 
   sessionStorage.setItem('answers', JSON.stringify(updatedAnswers));

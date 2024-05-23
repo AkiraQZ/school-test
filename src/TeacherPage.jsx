@@ -13,38 +13,99 @@ justify-content: center;
 width: 100%;
 height: 100vh;
 `
+const StyledFileInput = styled.input`
+  &[type="file"] {
+    display: none;
+  }
+`;
 
+const StyledFileLabel = styled.label`
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  margin-bottom: 2rem;
+`;
 
 
 
 export default function TeacherPage () {
+    const [isLoading, setIsLoading] = useState(false);
     const [file, setFile] = useState();
 
     const handleFileChange = (event) => {
         setFile(event.target.files[0]);
     }
 
+    async function handleResults() {
+        setIsLoading(true);
+        const userId = sessionStorage.getItem('userId');
+        const response = await axios.get(`http://localhost:5550/upload?userId=${userId}`, {
+          responseType: 'Blob',
+        })
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+
+        // Создаем элемент <a> для скачивания файла
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `${userId}.xlsx`); // Имя файла для скачивания, измените на нужное
+        document.body.appendChild(link);
+    
+        // Программный клик по элементу <a>, что приведет к началу скачивания
+        link.click();
+    
+        // Удаляем элемент <a> из DOM после скачивания
+        document.body.removeChild(link);
+        setIsLoading(false);
+    }
+    
     async function handleUpload() {
+      try {
+        setIsLoading(true);
         const formData = new FormData();
-        formData.append("myfile", file);
-        try {
-          await axios.post("http://localhost:5550/upload", formData);
-          alert("Файл загружен успешно!");
+        const userId = sessionStorage.getItem('userId');
+        formData.append('userId', userId);
+        formData.append('myFile', file);
+          await axios.post(`http://localhost:5550/upload/`, formData, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+          });
+        setIsLoading(false);  
         } catch (error) {
+          setIsLoading(false);
           console.error("Ошибка при загрузке файла:", error);
           alert("Произошла ошибка при загрузке файла. Возможно вы пытаетесь загрузить файл не того разрешения");
         }
       }
 
-    return (
+      return (
         <Fragment>
-            <StyledHeaderComponent>Страница учителя</StyledHeaderComponent>
-            <StyledSection>
-                <h2>Загрузите таблицу</h2>
-                <input type = "file" onChange={handleFileChange} />
+          {isLoading ? (
+            <div>Loading...</div> // Можно заменить на индикатор загрузки
+          ) : (
+            <Fragment>
+              <StyledHeaderComponent>Страница учителя</StyledHeaderComponent>
+              <StyledSection>
+                <h2>Загрузите таблицу в формате .xlsx</h2>
+                <StyledFileInput
+                  type="file"
+                  id="fileInput"
+                  onChange={handleFileChange}
+                />
+                <StyledFileLabel htmlFor="fileInput">
+                  Выберите файл
+                </StyledFileLabel>
                 <BaseButton onClick={handleUpload}>Загрузить</BaseButton>
-            </StyledSection>
-            <FooterComponent/>
+                <BaseButton onClick={handleResults}>Скачать результаты</BaseButton>
+              </StyledSection>
+              <FooterComponent/>
+            </Fragment>
+          )}
         </Fragment>
-    )
+      );
+      
+      
 }

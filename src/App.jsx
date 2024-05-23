@@ -5,7 +5,6 @@ import StyledHeaderComponent from './components/Header';
 import StyledTeacherPage from './TeacherPage';
 import StudentsPage from './StudentPage';
 import axios from 'axios';
-import { log } from 'react-modal/lib/helpers/ariaAppHider';
 import FooterComponent from './components/Footer';
 
 const Main = styled.section`
@@ -33,39 +32,7 @@ export default function App() {
   const [recRole, setRecRole] = useState('');
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [getedObject, setGetedObject] = useState([]);
-
-  async function codeCheck(input) {
-    try {
-        setGetedObject('');
-        setIsLoading(true);
-        let response = await axios.get("http://localhost:5550/teacher");
-        let data = response.data;
-        let foundUser = data.find((item) => item.code == input);
-        if (!foundUser) {
-            response = await axios.get("http://localhost:5550/student");
-            data = response.data;
-            foundUser = data.find((item) => item.code == input);
-            setGetedObject(foundUser);
-        } else {
-            setGetedObject(foundUser);
-        }
-        if (getedObject) {
-            setIsLoading(false);
-            return getedObject.role;
-        } else {
-            alert('Данного пользователя не существует');
-            setIsLoading(false);
-            return false;
-        }
-    } catch (err) {
-        console.error(err);
-        alert('Произошла ошибка при выполнении запроса');
-        setIsLoading(false);
-        setGetedObject([]);
-        return false;
-    }
-}
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     const savedRole = sessionStorage.getItem('recRole');
@@ -80,18 +47,58 @@ export default function App() {
     }
   }, [recRole]);
 
+  useEffect (() => {
+    if (userId) {    
+      sessionStorage.setItem('userId', userId )
+    }
+  }, [userId]);
+  
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
   };
 
-  const handleSend = async () => {
+  const handleSend = async (event) => {
     event.preventDefault();
-    const role = await codeCheck(inputValue);
-    if (role) {
-      setRecRole(role);
-    }
+    await codeCheck(inputValue);
   };
 
+  async function codeCheck(input) {
+    try {
+      setIsLoading(true);
+      let response = await axios.get("http://localhost:5550/teacher");
+      let data = response.data;
+      let foundUser = data.find((item) => item.code === input);
+      if (!foundUser) {
+        response = await axios.get("http://localhost:5550/student");
+        data = response.data;
+        foundUser = data.find((item) => item.code === input);
+        console.log(foundUser);
+      }
+      if (foundUser) {
+        setRecRole(foundUser.role);
+        setUserId(foundUser._id);
+      }
+      if (foundUser.role === 'student' && foundUser.results) {
+        setIsLoading(false);
+        alert("Вы не можете пройти тест дважды");
+        setRecRole('');
+        setUserId('');
+      }
+       else if (!foundUser){
+        alert('Данного пользователя не существует');
+        setRecRole('');
+        setUserId('');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Произошла ошибка при выполнении запроса');
+      setRecRole('');
+      setUserId('');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  
   return (
     <Fragment>
       {isLoading ? (

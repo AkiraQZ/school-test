@@ -23,18 +23,32 @@ export default function StudentsPage() {
   const [questions, setQuestions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  async function sendResult () {
+    try {
+      const userId = sessionStorage.getItem('userId');
+      const results = sessionStorage.getItem('answers')
+      .slice(1, -1)
+      .split(",");
+      await axios.put(`http://localhost:5550/student/${userId}`, {
+        results: results
+      })
+    }catch (err) {
+    console.log(err)
+  }
+}
+
   useEffect(() => {
     async function fetchData() {
       try {
         const response = await axios.get("http://localhost:5550/questions");
-        setQuestions(response.data);
+        const data = await response.data.sort((a, b) => a.id - b.id)
+        setQuestions(data);
         setIsLoading(false);
       } catch (err) {
         console.error(`Cannot get data: ${err}`);
         setIsLoading(false);
       }
     }
-
     fetchData();
   }, []);
 
@@ -48,22 +62,28 @@ export default function StudentsPage() {
     }
   }, [questions]);
 
-  const handleQuestionIndex = () => {
+
+   const  handleQuestionIndex = () => {
     setCurrentQuestionIndex(prevIndex => {
       const nextIndex = prevIndex + 1;
       if (nextIndex < questions.length) {
+      //Вернуть эту строку после тестов
+        // if (nextIndex < 4) {
         sessionStorage.setItem('currentQuestionIndex', String(nextIndex));
         return nextIndex;
       } else {
+        sendResult()
         console.log("Все вопросы были пройдены.");
         setShowThankMsg(true);
         sessionStorage.removeItem('recRole');
         sessionStorage.removeItem('currentQuestionIndex');
         sessionStorage.removeItem('answers');
+        sessionStorage.removeItem('userId');
         return prevIndex;
       }
     });
   };
+
   return (
     <>
       {isLoading ? (
