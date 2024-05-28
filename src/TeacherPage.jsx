@@ -42,7 +42,7 @@ export default function TeacherPage () {
     async function handleResults() {
         setIsLoading(true);
         const userId = sessionStorage.getItem('userId');
-        const response = await axios.get(`http://localhost:5550/upload?userId=${userId}`, {
+        const response = await axios.get(`http://localhost:5550/upload/results?userId=${userId}`, {
           responseType: 'Blob',
         })
         const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -68,18 +68,41 @@ export default function TeacherPage () {
         const userId = sessionStorage.getItem('userId');
         formData.append('userId', userId);
         formData.append('myFile', file);
-          await axios.post(`http://localhost:5550/upload/`, formData, {
-            headers: {
-              "Content-Type": "multipart/form-data"
-            }
+    
+        // Загрузка файла на сервер
+        await axios.post(`http://localhost:5550/upload`, formData, {
+          headers: {
+            "Content-Type": "multipart/form-data"
+          }
+        });
+    
+        // Ожидание завершения обработки файла на сервере
+        setTimeout(async () => {
+          // Получение кодов после загрузки файла
+          const getCodesResponse = await axios.get(`http://localhost:5550/upload/codes?userId=${userId}`, {
+            responseType: 'blob',
           });
-        setIsLoading(false);  
-        } catch (error) {
-          setIsLoading(false);
-          console.error("Ошибка при загрузке файла:", error);
-          alert("Произошла ошибка при загрузке файла. Возможно вы пытаетесь загрузить файл не того разрешения");
-        }
+    
+          if (getCodesResponse.status === 200) {
+            const url = window.URL.createObjectURL(new Blob([getCodesResponse.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `${userId}.xlsx`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+          } else {
+            console.error("Ошибка при получении кодов:", getCodesResponse.statusText);
+          }
+        }, 5000); // Задержка в 5 секунд перед запросом на скачивание кодов
+    
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+        console.error("Ошибка при загрузке файла:", error);
+        alert("Произошла ошибка при загрузке файла. Возможно вы пытаетесь загрузить файл не того разрешения");
       }
+    }
 
       return (
         <Fragment>
