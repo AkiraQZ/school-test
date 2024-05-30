@@ -42,7 +42,7 @@ export default function TeacherPage () {
     async function handleResults() {
         setIsLoading(true);
         const userId = sessionStorage.getItem('userId');
-        const response = await axios.get(`http://localhost:5550/upload/results?userId=${userId}`, {
+        const response = await axios.get(`http://school-test-api.containers.cloud.ru/upload/results?userId=${userId}`, {
           responseType: 'Blob',
         })
         const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -70,7 +70,7 @@ export default function TeacherPage () {
         formData.append('myFile', file);
     
         // Загрузка файла на сервер
-        await axios.post(`http://localhost:5550/upload`, formData, {
+        await axios.post(`http://school-test-api.containers.cloud.ru/upload`, formData, {
           headers: {
             "Content-Type": "multipart/form-data"
           }
@@ -79,7 +79,7 @@ export default function TeacherPage () {
         // Ожидание завершения обработки файла на сервере
         setTimeout(async () => {
           // Получение кодов после загрузки файла
-          const getCodesResponse = await axios.get(`http://localhost:5550/upload/codes?userId=${userId}`, {
+          const getCodesResponse = await axios.get(`http://school-test-api.containers.cloud.ru/upload/codes?userId=${userId}`, {
             responseType: 'blob',
           });
     

@@ -29,7 +29,7 @@ export default function StudentsPage() {
       const results = sessionStorage.getItem('answers')
       .slice(1, -1)
       .split(",");
-      await axios.put(`http://localhost:5550/student/${userId}`, {
+      await axios.put(`http://school-test-api.containers.cloud.ru/student/${userId}`, {
         results: results
       })
     }catch (err) {
@@ -40,7 +40,7 @@ export default function StudentsPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const response = await axios.get("http://localhost:5550/questions");
+        const response = await axios.get("http://school-test-api.containers.cloud.ru/questions");
         const data = await response.data.sort((a, b) => a.id - b.id)
         setQuestions(data);
         setIsLoading(false);

@@ -65,11 +65,11 @@ export default function App() {
   async function codeCheck(input) {
     try {
       setIsLoading(true);
-      let response = await axios.get("http://localhost:5550/teacher");
+      let response = await axios.get("http://school-test-api.containers.cloud.ru/teacher");
       let data = response.data;
       let foundUser = data.find((item) => item.code === input);
       if (!foundUser) {
-        response = await axios.get("http://localhost:5550/student");
+        response = await axios.get("http://school-test-api.containers.cloud.ru/student");
         data = response.data;
         foundUser = data.find((item) => item.code === input);
         console.log(foundUser);
